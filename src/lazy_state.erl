@@ -1,6 +1,8 @@
 -module(lazy_state).
 
--export([new/1, inject/3, get/2, peek/2]).
+-export([new/1, value/2, producer/3]).
+-export([inject/3, get/2, peek/2]).
+
 -export_type([state/0, item/0]).
 
 -type key() :: atom().
@@ -8,14 +10,25 @@
 -type receiver(V) :: fun((...) -> V).
 -type maybe_value() :: {ok, value()} | {error, term()}.
 -type producer() :: receiver(maybe_value()).
--type item() :: {key(), value()} | {key(), [key()], producer()}.
 
+-opaque item() :: {key(), value()} | {key(), [key()], producer()}.
 -opaque state() :: [item()].
+
 
 
 -spec new([item()]) -> state().
 new(Items) ->
     Items.
+
+
+-spec value(key(), value()) -> item().
+value(Key, Value) ->
+    {Key, {ok, Value}}.
+
+
+-spec producer(key(), [key()], producer()) -> item().
+producer(Key, Keys, Producer) ->
+    {Key, Keys, Producer}.
 
 
 -spec inject([key()], receiver(V), state()) -> {V, state()}.
