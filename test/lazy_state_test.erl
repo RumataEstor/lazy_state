@@ -45,7 +45,7 @@ value_test(Key, Value, First, Last) ->
     ?assertMatch({Ref, State}, lazy_state:inject([Key], make_counter(Ref), State)),
     ensure(Ref, [Value]),
 
-    ?assertMatch({{error, {cant_resolve, inexistent_key, not_found}},
+    ?assertMatch({{error, {unresolved, inexistent_key, notfound}},
                   State}, lazy_state:inject([inexistent_key], make_counter(Ref), State)),
     ensure(Ref, []),
     ok.
@@ -62,7 +62,9 @@ bad_producer_test() ->
     State = lazy_state:new([{a, [b], fun(B) -> {ok, B} end}]),
     Ref = make_ref(),
 
-    {{error, {cant_resolve, a, {cant_resolve, b, not_found}}}, _State} = lazy_state:inject([a], make_counter(Ref), State),
+    {{error, {unresolved, a,
+              {unresolved, b, notfound}}},
+     _State} = lazy_state:inject([a], make_counter(Ref), State),
     ensure(Ref, []),
     ok.
 
@@ -70,12 +72,13 @@ producer_test(Key, Keys, Producer, First, Last, Value) ->
     State = lazy_state:new(First ++ [{Key, Keys, Producer}] ++ Last),
     Ref = make_ref(),
 
-    ?assertMatch({error, not_resolved}, lazy_state:peek(Key, State)),
+    ?assertMatch({error, unresolved}, lazy_state:peek(Key, State)),
     {Ref, NewState} = lazy_state:inject([Key], make_counter(Ref), State),
     ensure(Ref, [Value]),
     ?assertMatch({ok, Value}, lazy_state:peek(Key, NewState)),
 
-    ?assertMatch({{error, {cant_resolve, inexistent_key, not_found}}, State}, lazy_state:inject([inexistent_key], make_counter(Ref), State)),
+    ?assertMatch({{error, {unresolved, inexistent_key, notfound}}, State},
+                 lazy_state:inject([inexistent_key], make_counter(Ref), State)),
     ensure(Ref, []),
 
     ok.
@@ -93,9 +96,10 @@ example2_test() ->
                             {c, [a, b], fun(A, B) -> {ok, {A, B}} end}]),
     {{1, 2}, _State1} = lazy_state:inject([c], fun(C) -> C end, State).
 
+
 example3_test() ->
     State = lazy_state:new([{a, [], fun() -> {ok, 1} end},
                             {b, [a, c], fun(A, C) -> {ok, {A, C}} end}]),
-    {{error, {cant_resolve, b,
-              {cant_resolve, c, not_found}}},
+    {{error, {unresolved, b,
+              {unresolved, c, notfound}}},
      _State1} = lazy_state:inject([b], fun(B) -> B end, State).

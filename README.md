@@ -41,29 +41,29 @@ This is achieved by requiring producers to produce either `{ok, Value}` or
 `{error, Reason}`.
 
 ```erlang
-State = lazy_state:new([{a, 1},
-                        {b, [a], fun(A) -> {ok, A + 1} end}]),
-{{ok, 2}, _State1} = lazy_state:get(b, State).
+    State = lazy_state:new([{a, 1},
+                            {b, [a], fun(A) -> {ok, A + 1} end}]),
+    {{ok, 2}, _State1} = lazy_state:get(b, State).
 ```
 
 In most cases you want to call a function providing arguments if they were
 resolved successfully.
 
 ```erlang
-State = lazy_state:new([{a, 1},
-                        {b, [a], fun(A) -> {ok, A + 1} end},
-                        {c, [a, b], fun(A, B) -> {ok, {A, B}} end}]),
-{{1, 2}, _State1} = lazy_state:inject([c], fun(C) -> C end, State).
+    State = lazy_state:new([{a, 1},
+                            {b, [a], fun(A) -> {ok, A + 1} end},
+                            {c, [a, b], fun(A, B) -> {ok, {A, B}} end}]),
+    {{1, 2}, _State1} = lazy_state:inject([c], fun(C) -> C end, State).
 ```
 
 If a value can't be resolved the attempt to do so produces an error.
 
 ```erlang
-State = lazy_state:new([{a, [], fun() -> {ok, 1} end},
-                        {b, [a, c], fun(A, C) -> {ok, {A, C}} end}]),
-{{error, {cant_resolve, b,
-          {cant_resolve, c, not_found}}},
- _State1} = lazy_state:inject([b], fun(B) -> B end, State).
+    State = lazy_state:new([{a, [], fun() -> {ok, 1} end},
+                            {b, [a, c], fun(A, C) -> {ok, {A, C}} end}]),
+    {{error, {unresolved, b,
+              {unresolved, c, notfound}}},
+     _State1} = lazy_state:inject([b], fun(B) -> B end, State).
 ```
 
 Build

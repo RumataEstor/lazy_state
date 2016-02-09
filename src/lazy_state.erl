@@ -39,7 +39,7 @@ inject([Key | Keys], RevValues, State, Receiver) ->
         {{ok, Value}, NewState} ->
             inject(Keys, [Value | RevValues], NewState, Receiver);
         {{error, Reason}, NewState} ->
-            {{error, {cant_resolve, Key, Reason}}, NewState}
+            {{error, {unresolved, Key, Reason}}, NewState}
     end;
 
 inject([], RevValues, State, Receiver) ->
@@ -58,7 +58,7 @@ get(Key, State) ->
             {Value, [{Key, Value} | NewState]};
 
         _ ->
-            {{error, not_found}, State}
+            {{error, notfound}, State}
     end.
 
 
@@ -68,7 +68,7 @@ peek(Key, State) ->
         {_, Value} ->
             Value;
         {_, _, _} ->
-            {error, not_resolved};
+            {error, unresolved};
         _ ->
-            {error, not_found}
+            {error, notfound}
     end.
