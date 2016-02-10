@@ -2,3 +2,7 @@ language: erlang
 otp_release:
   - 17.5
   - 18.2
+before_script:
+  - dialyzer --output_plt .dialyzer_plt --build_plt --apps kernel stdlib erts
+script:
+  - dialyzer --no_check_plt --plt .dialyzer_plt --no_native --src src
