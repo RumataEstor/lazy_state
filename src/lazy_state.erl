@@ -12,7 +12,10 @@
 -type producer() :: receiver(maybe_value()).
 
 -type item() :: {key(), value()} | {key(), [key()], producer()}.
--opaque state() :: [{key(), maybe_value()}].
+
+%% dialyzer opaque bug workaround
+-type state_() :: [{key(), maybe_value()}].
+-opaque state() :: state_().
 
 
 -spec new([item()]) -> state().
@@ -29,7 +32,7 @@ new_item({Key, Keys, Producer}) when is_function(Producer, length(Keys)) ->
     {Key, Keys, Producer}.
 
 
--spec inject([key()], receiver(V), state()) -> {V, state()} | {{error, term()}, state()}.
+-spec inject([key()], receiver(V), state_()) -> {V, state()} | {{error, term()}, state()}.
 inject(Keys, Receiver, State) ->
     inject(Keys, [], State, Receiver).
 
@@ -46,7 +49,7 @@ inject([], RevValues, State, Receiver) ->
     {erlang:apply(Receiver, lists:reverse(RevValues)), State}.
 
 
--spec get(key(), state()) -> {maybe_value(), state()}.
+-spec get(key(), state_()) -> {maybe_value(), state()}.
 get(Key, State) ->
     case lists:keyfind(Key, 1, State) of
         {_, Value} ->
